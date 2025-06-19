@@ -1,107 +1,136 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useInventory } from './context/InventoryContext';
 
-export default function AddBarang() {
-  const router = useRouter();
-  const [name, setName] = useState('');
-  const [qty, setQty] = useState('');
-  const imageMap = {
-  'beras': require('@/assets/images/beras.png'),
-  'minyak': require('@/assets/images/minyak.png'),
-  'teh': require('@/assets/images/teh.png'),
-  'pasta gigi': require('@/assets/images/obatnyamuk.png'),
-  'gula': require('@/assets/images/gula.png'),
-  'garam': require('@/assets/images/garam.png'),
-  'sabun mandi': require('@/assets/images/sabunmandi.png'),
-  'sabun cuci piring': require('@/assets/images/sabuncucipring.png'),
-  'sabun lantai': require('@/assets/images/sabunlantai.png'),
-  'mie kuah': require('@/assets/images/miekuah.png'),
-  'coklat messes': require('@/assets/images/coklatmesses.png'),
-  'coklat batang': require('@/assets/images/coklatbatang.png'),
-  'keju': require('@/assets/images/keju.png'),
-  'mie goreng': require('@/assets/images/miegoreng.png'),
-  'makaroni': require('@/assets/images/makaroni.png'),
-  'pulpen': require('@/assets/images/pulpen.png'),
-  'buku tulis': require('@/assets/images/bukutulis.png'),
-  'obat nyamuk': require('@/assets/images/obatnyamuk.png'),
-  'tepung terigu': require('@/assets/images/tepungterigu.png'),
-  'parfum': require('@/assets/images/parfum.png'),
-  'sapu': require('@/assets/images/sapu.png'),
-  
+const imageMap = {
+  beras: require('@/assets/images/beras.png'),
+  minyak: require('@/assets/images/minyak.png'),
+  gula: require('@/assets/images/gula.png'),
+  sapu: require('@/assets/images/sapu.png'),
+  teh: require('@/assets/images/teh.png'),
 };
 
-const defaultImage = require('@/assets/images/beras.png');
-const image = imageMap[name.toLowerCase()] || defaultImage;
+export default function AddScreen() {
+  const [name, setName] = useState('');
+  const [qty, setQty] = useState('');
+  const { addItem } = useInventory();
+  const router = useRouter();
 
-  const handleSave = () => {
+  const handleAdd = () => {
     if (!name || !qty) {
-      Alert.alert('Isi semua data!');
+      Alert.alert('Harap isi nama dan jumlah barang!');
       return;
     }
 
-    Alert.alert('Berhasil', `Barang "${name}" (${qty}) berhasil ditambahkan!`);
+    const newItem = {
+      id: Date.now(),
+      name,
+      qty: parseInt(qty),
+    };
+
+    addItem(newItem);
     router.replace('/inventory');
   };
 
+  const imageSource = imageMap[name.toLowerCase()] || require('@/assets/images/beras.png');
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tambah Barang Baru</Text>
+      <View style={styles.inner}>
+        <Text style={styles.header}>📦 Tambah Barang</Text>
 
-      <Image source={image} style={styles.image} />
+        <Image source={imageSource} style={styles.previewImage} />
 
-      <Text style={styles.label}>Nama Barang</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Contoh: Pasta Gigi"
-        value={name}
-        onChangeText={setName}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Nama barang"
+          value={name}
+          onChangeText={setName}
+        />
 
-      <Text style={styles.label}>Jumlah</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Contoh: 10"
-        keyboardType="numeric"
-        value={qty}
-        onChangeText={setQty}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Jumlah"
+          keyboardType="numeric"
+          value={qty}
+          onChangeText={setQty}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Simpan</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleAdd}>
+          <Text style={styles.buttonText}>Tambah</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.replace('/inventory')}>
-        <Text style={styles.cancel}>Batal</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push('/inventory')}
+        >
+          <Text style={styles.backText}>⬅️ Kembali</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { fontSize: 14, marginBottom: 6 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',   // tengah vertikal
+    alignItems: 'center',       // tengah horizontal
+    padding: 16,
+  },
+  inner: {
+    width: '100%',
+    maxWidth: 300,              // agar rapi di tengah
+    alignItems: 'center',
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  previewImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
   input: {
+    width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
     padding: 10,
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   button: {
+    width: '100%',
+    backgroundColor: '#0033FF',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: { color: '#fff', fontWeight: 'bold' },
+
+  backButton: {
+    width: '100%',
     backgroundColor: '#0033FF',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  cancel: {
-    marginTop: 16,
-    textAlign: 'center',
-    color: '#666',
-    textDecorationLine: 'underline',
+  backText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
-  image: { width: 80, height: 80, alignSelf: 'center', marginBottom: 20 },
 });
